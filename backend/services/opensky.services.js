@@ -50,17 +50,30 @@ const getAircraftStates = async () => {
   }
 };
 
-const formatAircraft = async (aircraft) => {
+const makeObjAircraft = (aircraft) => {
   const aircraftObject = {
     icao24: aircraft[0],
-    callsign: aircraft[1],
-    origin: aircraft[2],
+    callsign: aircraft[1]?.trim() || null,
+    originCountry: aircraft[2],
     longitude: aircraft[5],
     latitude: aircraft[6],
-    altitude: aircraft[7],
-    onground: aircraft[8],
+    baroAltitude: aircraft[7],
+    onGround: aircraft[8],
     velocity: aircraft[9],
-    true_track: aircraft[10],
-    vs: aircraft[11],
+    heading: aircraft[10],
+    verticalSpeed: aircraft[11],
   };
+  return aircraftObject;
+};
+
+export const formatAircraft = async () => {
+  const { states } = await getAircraftStates();
+  if (!states) {
+    return [];
+  }
+  const aircraft_obj = states.map((a) => makeObjAircraft(a));
+  const validAircraft = aircraft_obj.filter(
+    (a) => a.longitude != null && a.latitude != null,
+  );
+  return validAircraft;
 };
