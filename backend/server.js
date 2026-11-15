@@ -1,8 +1,9 @@
 import express from "express";
-import dotenv from "dotenv";
-import { retrieveCache } from "./services/opensky.services.js";
-
-dotenv.config();
+import "dotenv/config";
+import {
+  retrieveCache,
+  startAircraftPolling,
+} from "./services/opensky.services.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -24,5 +25,6 @@ app.get("/api/aircraft", async (req, res) => {
 });
 
 app.listen(PORT, () => {
+  startAircraftPolling();
   console.log(`Server is listening on ${PORT}...`);
 });

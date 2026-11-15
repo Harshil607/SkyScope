@@ -7,6 +7,7 @@ let lastCacheUpdate = null;
 let inFlightPromise = null;
 let cachedAccessToken = null;
 let tokenExpiresAt = 0;
+let intervalID = null;
 
 const refreshInterval = Number(process.env.AIRCRAFT_REFRESH_INTERVAL);
 
@@ -58,8 +59,6 @@ const getAircraftStates = async () => {
     const access_token = await getAccessToken();
     const res = await fetch("https://opensky-network.org/api/states/all", {
       headers: {
-        "Content-Type": "text/plain",
-        "Client-ID": process.env.CLIENT_ID,
         Authorization: `Bearer ${access_token}`,
       },
     });
@@ -100,7 +99,7 @@ const formatAircraft = async () => {
       const { states } = await getAircraftStates();
 
       if (!states) {
-        return cache;
+        return { success: false, data: cache };
       }
 
       const aircraft_obj = states.map((a) => makeObjAircraft(a));
@@ -111,10 +110,11 @@ const formatAircraft = async () => {
 
       cache = validAircraft;
       lastCacheUpdate = Date.now();
-      return cache;
+
+      return { success: true, data: cache };
     } catch (error) {
-      console.log(error.message);
-      return cache;
+      console.error(error.message);
+      return { success: false, data: cache };
     } finally {
       inFlightPromise = null;
     }
@@ -123,9 +123,22 @@ const formatAircraft = async () => {
   return inFlightPromise;
 };
 
-formatAircraft();
+export const startAircraftPolling = async () => {
+  if (intervalID !== null) {
+    return;
+  }
 
-setInterval(formatAircraft, REFRESH_INTERVAL);
+  const result = await formatAircraft();
+
+  if (result.success) {
+    console.log("Initial aircraft data fetched successfully");
+  } else {
+    console.error("Initial aircraft fetch failed");
+    console.log("Will retry on the next refresh interval");
+  }
+
+  intervalID = setInterval(formatAircraft, REFRESH_INTERVAL);
+};
 
 export const retrieveCache = () => {
   return { cache, lastCacheUpdate };
