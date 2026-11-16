@@ -130,21 +130,18 @@ function AircraftMarkers({ onSelect, selectedAircraft }) {
 
   return (
     <>
-      {aircrafts
-        .filter((_, index) => index % 10 === 0)
-        .slice(0, 100)
-        .map((aircraft) => (
-          <Aircraft
-            key={aircraft.icao24}
-            latitude={aircraft.latitude}
-            longitude={aircraft.longitude}
-            altitude={aircraft.baroAltitude}
-            heading={aircraft.heading}
-            aircraft={aircraft}
-            onSelect={onSelect}
-            isSelected={selectedAircraft?.icao24 === aircraft.icao24}
-          />
-        ))}
+      {aircrafts.map((aircraft) => (
+        <Aircraft
+          key={aircraft.icao24}
+          latitude={aircraft.latitude}
+          longitude={aircraft.longitude}
+          altitude={aircraft.baroAltitude}
+          heading={aircraft.heading}
+          aircraft={aircraft}
+          onSelect={onSelect}
+          isSelected={selectedAircraft?.icao24 === aircraft.icao24}
+        />
+      ))}
     </>
   );
 }
